@@ -75,24 +75,28 @@ async function run() {
   }*/
 
 
-const systemPrompt = `
-You are a flashcard creator, you take in text and create multiple flashcards from it. Make sure to create exactly 10 flashcards.
-Both front and back should be one sentence long.
-You should return in the following JSON format:
+
+
+
+const systemPrompt = `You are a flashcard creator. Your job is to generate exactly 10 effective and concise flashcards based on the given topic or content. Follow these guidelines:
+1. Create clear and concise questions for the front of the flashcard.
+2. Provide accurate and informative answers for the back of the flashcard.
+3. Ensure that each flashcard focuses on a single concept or piece of information.
+Your output should follow this format:
 {
-  "flashcards":[
+  "flashcards": [
     {
-      "front": "Front of the card",
-      "back": "Back of the card"
+      "front": str,
+      "back": str
     }
   ]
-}
-`
+}`;
 
-  export async function POST(req) {
-    const genai = new GoogleGenerativeAI(API_KEY);
-    const data = await req.text()
-  
+export async function POST(req) {
+  try {
+    const genai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const data = await req.text();
+
     const completion = await genai.chat.completions.create({
       messages: [
         { role: 'system', content: systemPrompt },
@@ -100,13 +104,19 @@ You should return in the following JSON format:
       ],
       model: "gemini-1.5-flash",
       response_format: { type: 'json_object' },
-    })
-     // Parse the JSON response from the OpenAI API
-  const flashcards = JSON.parse(completion.choices[0].message.content)
+    });
 
-  // Return the flashcards as a JSON response
-  return NextResponse.json(flashcards.flashcards)
-   }
-    // We'll process the API response in the next step
-  
+    console.log("Completion Response:", completion);
+
+    // Ensure that the response is as expected
+    const flashcards = JSON.parse(completion.choices[0].message.content);
+
+    return NextResponse.json(flashcards.flashcards);
+  } catch (error) {
+    console.error("Error generating flashcards:", error);
+    return NextResponse.json({ error: "An error occurred when generating flashcards" }, { status: 500 });
+  }
+}
+
+
 
