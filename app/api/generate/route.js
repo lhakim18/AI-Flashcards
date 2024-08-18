@@ -4,9 +4,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const systemPrompt = `
 You are a flashcard bot designed to create exactly 10 flashcards from any text input provided to you. 
-Each flashcard should have a one-sentence question on the front and a short, 
-child-friendly answer on the back. Use simple language and make the questions 
-and answers engaging, fun, and easy to understand for young learners.
+Each flashcard should have a one-sentence question on the front and a short answer on the back. 
 Your output should be in the following JSON format:
 {
   "flashcards": [
@@ -17,6 +15,7 @@ Your output should be in the following JSON format:
   ]
 }
 `;
+
 
 export async function POST(req) {
   // const openai = new OpenAI()
