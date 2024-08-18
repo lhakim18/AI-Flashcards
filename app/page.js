@@ -1,10 +1,50 @@
+'use client'
+
 import Image from "next/image";
 import { SignedIn, SignedOut, UserButton, ClerkProvider } from "@clerk/nextjs";
 import { AppBar, Button, Container, Toolbar, Typography, Grid, Box, Paper } from "@mui/material";
 import Head from 'next/head';
+import getStripe from '@/utils/get-stripe'
+import { loadStripe } from '@stripe/stripe-js'
 
 
 export default function Home() {
+  
+  const handleSubmit = async() =>{
+    try {
+        const checkoutSession = await fetch('/api/checkout_session', {
+            method: 'POST',
+            headers: {
+                origin: 'http://localhost:3000',
+            },
+        });
+
+        const checkoutSessionJson = await checkoutSession.json();
+
+        if (checkoutSession.statusCode === 500) {
+            console.error(checkoutSession.message);
+            return;
+        }
+
+        const stripe = await getStripe();
+
+        // Check if stripe is defined
+        if (!stripe) {
+            throw new Error('Stripe is not initialized. Please check your API key and initialization.');
+        }
+
+        const { error } = await stripe.redirectToCheckout({
+          sessionId: checkoutSessionJson.id,
+        });
+
+        if (error) {
+            console.warn(error.message);
+        }
+    } catch (error) {
+        console.error('Error in handleSubmit:', error);
+        alert('An error occurred: ' + error.message);
+    }
+  }
   return (
 
     <Container maxWidth="lg" sx={{ minHeight: '100vh', paddingTop: '64px' }}>
@@ -199,7 +239,7 @@ export default function Home() {
               <Typography>
                 Unlimited access with premium features and priority support.
               </Typography>
-              <Button variant="contained" color="primary" sx={{ mt: 2 }}>
+              <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick = {handleSubmit}>
                 Choose Premium
               </Button>
             </Paper>

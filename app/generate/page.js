@@ -1,29 +1,49 @@
 'use client'
 
-import {useUser, ClerkProvider } from '@clerk/nextjs'
+import {useUser} from '@clerk/nextjs'
 import {useRouter} from 'next/navigation'
-import {Container, TextField, Typography, Box, Paper, Button, Dialog, DialogActions, DialogContentText, DialogTitle, DialogContent} from '@mui/material'
-import {writeBatch} from 'firebase/firestore'
+import {Grid, Card, Container, TextField, Typography, Box, Paper, Button, Dialog, DialogActions, DialogContentText, DialogTitle, DialogContent, CardActionArea, CardContent} from '@mui/material'
 import {useState} from 'react'
-    
+import { db } from '@/firebase';
+import {writeBatch, collection, doc, getDoc} from 'firebase/firestore'
+
 
 export default function Generate(){
     
     const {isLoaded, isSignedIn, user} = useUser()
     const [flashcards, setFlashcards] = useState([])
-    const [flipped, setFlipped] = useState([])
+    const [flipped, setFlipped] = useState({})
     const [text, setText] = useState('')
     const [name, setName] = useState('')
     const [open, setOpen] = useState(false)
     const router = useRouter()
 
     const handleSubmit = async() => {
-        fetch('/api/generate',{
-            method: 'POST',
-            body: text,
-        })
-        .then((res) => res.json())
-        .then(data => setFlashcards(data))
+        try {
+            const response = await fetch('api/generate', {
+                method: 'POST',
+                body: text,
+            });
+
+            // Check if the response is ok (status in the range 200-299)
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const text = await response.text(); // Get response as text
+
+            // Check if the response text is empty
+            if (!text) {
+                throw new Error('Received empty response');
+            }
+
+            const data = JSON.parse(text); // Parse the JSON
+
+            setFlashcards(data);
+        } catch (error) {
+            console.error('Error in handleSubmit:', error);
+            alert('An error occurred: ' + error.message);
+        }
     }
     const handleCardClick = (id) => {
         setFlipped((prev) => ({
@@ -37,38 +57,44 @@ export default function Generate(){
     const handleClose = () => {
         setOpen(false)
     }
-    const saveFlashcards = async () =>{
-        if(!name){
-            alert('Please enter a name')
-            return
+    const saveFlashcards = async () => {
+        // Check if user is loaded and signed in
+        if (!isSignedIn || !user) {
+            alert('User is not signed in. Please sign in to save flashcards.');
+            return;
         }
-        const batch = writeBatch(db)
-        const userDocRef = doc(collection(db,'users'), user.id)
-        const docSna = await getDoc(userDocRef)
 
-        if(DocumentSnapshot.exists()){
-            const collections = docSnap.data().flashcards || []
-            if (collections.find((f)=> f.name === name)){
-                alert("Flashcard collection with the same name already exists.")
-                return
-            }
-            else{
-                collections.push({name})
-                batch.set(userDocRef, {flashcards:collectioins}, {merge:true})
-            }
+        if (!name) {
+            alert('Please enter a name');
+            return;
         }
-        else{
-            batch.set(userDocRef, {flashcards: [{name}]})
+
+        const batch = writeBatch(db);
+        const userDocRef = doc(collection(db, 'users'), user.id); // Ensure user is defined
+
+        const docSnap = await getDoc(userDocRef);
+
+        if (docSnap.exists()) {
+            const collections = docSnap.data().flashcards || [];
+            if (collections.find((f) => f.name === name)) {
+                alert("Flashcard collection with the same name already exists.");
+                return;
+            } else {
+                collections.push({ name });
+                batch.set(userDocRef, { flashcards: collections }, { merge: true });
+            }
+        } else {
+            batch.set(userDocRef, { flashcards: [{ name }] });
         }
-        
-        const colRef= collection(userDocRef, name)
-        flashcards.forEach((flashcard)=>{
-            const cardDocRef = doc(colRef)
-            batch.set(cardDocRef, flashcard)
-        })
-        await batch.commit()
-        handlelose()
-        router.push('/flashcards')
+
+        const colRef = collection(userDocRef, name);
+        flashcards.forEach((flashcard) => {
+            const cardDocRef = doc(colRef);
+            batch.set(cardDocRef, flashcard);
+        });
+        await batch.commit();
+        handleClose();
+        router.push('/flashcards');
     }
     return (
     <Container maxWidth ="md">
@@ -111,9 +137,7 @@ export default function Generate(){
                             <Grid item xs = {12} sm = {6} md = {4} key = {index}>
                                 <Card>
                                     <CardActionArea 
-                                    onclick = {() => {
-                                        handleCardClick(index)
-                                    }}
+                                    onClick={() => handleCardClick(index)}
                                 >
                                     <CardContent>
                                         <Box sx = {{
@@ -140,7 +164,7 @@ export default function Generate(){
                                             padding: 2,
                                             boxSizing: 'border-box',
                                         },
-                                        '& > div > div:nth-of-typ(2)':{
+                                        '& > div > div:nth-of-type(2)':{
                                             transform: 'rotateY(180deg)'
                                         },
                                         
@@ -166,7 +190,7 @@ export default function Generate(){
                         
                 </Grid>
                 <Box sx= {{mt:4, display:'flex', justifyContent:'center'}}>
-                        <Button variant='cointained' color= 'secondary' onClick={handleOpen}>
+                        <Button variant='contained' color= 'secondary' onClick={handleOpen}>
                             Save
                         </Button>
                 </Box>
@@ -179,10 +203,12 @@ export default function Generate(){
                     Please enter a name for your flashcards collection
                 </DialogContentText>
                 <TextField
-                autoFocusmargin= 'dense'
+                autoFocus
+                margin= 'dense'
                 label = 'Collection Name'
                 type = 'text'
-                fullWidthvalue = {name}
+                fullWidth
+                value = {name}
                 onChange={(e) => setName(e.target.value)}
                 variant = "outlined"
                 />
