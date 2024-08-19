@@ -1,0 +1,30 @@
+/* animatedborder.module.css */
+.animatedBorder {
+  position: relative;
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #000;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: linear-gradient(45deg, #fff158, #ffd158, #fde2cf, #ff6f3b);
+  background-size: 400% 400%;
+  animation: borderAnimation 4s linear infinite;
+}
+
+@keyframes borderAnimation {
+  0% {
+    border-color: #fde2cf;
+    background-position: 0% 0%;
+  }
+  50% {
+    border-color: #ffd158;
+    background-position: 100% 100%;
+  }
+  100% {
+    border-color: #ffd158;
+    background-position: 0% 0%;
+  }
+}
