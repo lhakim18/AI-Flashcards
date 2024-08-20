@@ -8,10 +8,10 @@ export default function SignUpPage(){
     return (
   
     <Container maxWidth = "100vw">
-        <AppBar position="static" sx = {{backgroundColor: "#3f31b5"}} >
+        <AppBar position="static" sx = {{backgroundColor: '#3F704D'}} >
             <Toolbar>
                  <Typography variant="h6" sx={{flexGrow: 1}}>
-                 Flashcard SaaS
+                 QuickFlash
               </Typography>
     
               <Button color = "inherit">

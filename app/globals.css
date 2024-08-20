@@ -105,3 +105,16 @@ a {
     color-scheme: dark;
   }
 }
+
+/* globals.css */
+
+@font-face {
+  font-family: 'Ultra';
+  src: url('/public/fonts/Ultra-Regular.ttf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  font-family: 'Ultra', sans-serif;
+}

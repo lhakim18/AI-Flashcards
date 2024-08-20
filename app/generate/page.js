@@ -6,6 +6,7 @@ import {Grid, Card, Container, TextField, Typography, Box, Paper, Button, Dialog
 import {useState} from 'react'
 import { db } from '@/firebase';
 import {writeBatch, collection, doc, getDoc} from 'firebase/firestore'
+import borderStyles from '/components/animatedborder.module.css'
 
 
 export default function Generate(){
@@ -95,8 +96,8 @@ export default function Generate(){
         router.push('/flashcards');
     }
     return (
-    <Container maxWidth ="md">
-        <Box sx={{
+<Container maxWidth="100vw" sx={{ minHeight: '100vh', backgroundColor: '#fdf9f6', paddingTop: '64px' }}>
+<Box sx={{
             mt:4,
             mb:6, 
             display: 'flex', 
@@ -104,8 +105,8 @@ export default function Generate(){
             alignItems: 'center'
         }}
          >
-            <Typography variant = "h4"> Generate Flashcards</Typography>
-            <Paper sx = {{p:4, width: '100%'}}>
+            <Typography variant = "h4" color={'#3F704D'} padding = "6px"> Generate Flashcards</Typography>
+            <Paper color = "primary" sx = {{p:4, width: '100%'}}>
                 <TextField value = {text}
                 onChange={(e) => setText(e.target.value)} 
                 label = "Enter text"
@@ -118,12 +119,19 @@ export default function Generate(){
                 }}
                 />
                 <Button
-                variant = 'contained'
-                color = 'primary'
-                onClick = {handleSubmit}
-                fullWidth
-                > {'  '}
-                    Submit
+                    onClick={handleSubmit}
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '100%', // Full width for the button
+                        mt: 2, // Margin on top of the button
+                        mb: 2 // Margin on bottom of the button
+                    }}
+                >
+                    <Typography className={borderStyles.animatedBorder}>
+                        Submit
+                    </Typography>
                 </Button>
                 
             </Paper>
