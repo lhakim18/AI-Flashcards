@@ -1,6 +1,7 @@
 // Import the functions you need from the SDKs you need
+import { useEffect } from 'react';
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, isSupported } from "firebase/analytics";
 import {getFirestore} from 'firebase/firestore';
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -16,10 +17,29 @@ const firebaseConfig = {
   appId: "1:218797915259:web:e3df9abbe1b6abe156f6de",
   measurementId: "G-B7L7NRCFHP"
 };
+const useFirebase = () => {
+  const [firebaseApp, setFirebaseApp] = useState(null);
+  const [analytics, setAnalytics] = useState(null);
+  const [db, setDb] = useState(null);
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const db = getFirestore(app)
+  useEffect(() => {
+    isSupported().then((supported) => {
+      if (supported) {
+        const app = initializeApp(firebaseConfig);
+        setFirebaseApp(app);
 
-export {db}
+        // Analytics should only be initialized on the client side
+        const analyticsInstance = getAnalytics(app);
+        setAnalytics(analyticsInstance);
+
+        // Firestore can be initialized safely
+        const dbInstance = getFirestore(app);
+        setDb(dbInstance);
+      }
+    });
+  }, []);
+
+  return { firebaseApp, analytics, db };
+};
+
+export default useFirebase;

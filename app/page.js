@@ -1,6 +1,7 @@
 'use client'
 
 import Image from "next/image";
+import useFirebase from "../firebase";
 import { SignedIn, SignedOut, UserButton, ClerkProvider } from "@clerk/nextjs";
 import { AppBar, Button, Container, Toolbar, Typography, Grid, Box, Paper, Avatar } from "@mui/material";
 import Head from 'next/head';
